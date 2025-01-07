@@ -95,6 +95,30 @@
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+        .admin-button {
+            margin-top: 20px;
+            background: linear-gradient(to right, #8A2BE2, #4B0082);
+        }
+        .admin-button:hover {
+            background: linear-gradient(to right, #4B0082, #8A2BE2);
+        }
+        .users-container {
+            padding: 20px;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .users-table th, .users-table td {
+            border: 1px solid #DDD;
+            padding: 10px;
+            text-align: center;
+        }
+        .users-table th {
+            background: #4B0082;
+            color: #FFF;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +138,7 @@
         <button onclick="navigateTo('fincas')">Fincas</button>
         <button onclick="navigateTo('planta')">Planta</button>
         <button onclick="navigateTo('comercial')">Comercial</button>
+        <button class="hidden admin-button" id="admin-users-button" onclick="navigateTo('users')">Usuarios</button>
     </div>
 
     <div class="hidden" id="fincas-container" class="fincas-container">
@@ -132,6 +157,29 @@
         </div>
     </div>
 
+    <div class="hidden" id="users-container">
+        <div class="users-container">
+            <h1>Gestión de Usuarios</h1>
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Clave</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                </tbody>
+            </table>
+            <form id="add-user-form">
+                <input type="text" id="new-username" placeholder="Nuevo usuario" required>
+                <input type="password" id="new-password" placeholder="Nueva clave" required>
+                <button type="submit">Agregar Usuario</button>
+            </form>
+            <p id="success-message" style="color: green; display: none;">Usuario agregado satisfactoriamente.</p>
+            <button onclick="goBack()">Volver</button>
+        </div>
+    </div>
+
     <script>
         const users = {
             admin: "admin",
@@ -146,8 +194,22 @@
         const loginContainer = document.getElementById('login-container');
         const homeContainer = document.getElementById('home-container');
         const fincasContainer = document.getElementById('fincas-container');
+        const usersContainer = document.getElementById('users-container');
         const userNameSpan = document.getElementById('user-name');
         const errorMessage = document.getElementById('error-message');
+        const adminUsersButton = document.getElementById('admin-users-button');
+        const usersTableBody = document.getElementById('users-table-body');
+        const addUserForm = document.getElementById('add-user-form');
+        const successMessage = document.getElementById('success-message');
+
+        function populateUsersTable() {
+            usersTableBody.innerHTML = '';
+            Object.entries(users).forEach(([username, password]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${username}</td><td>${password}</td>`;
+                usersTableBody.appendChild(row);
+            });
+        }
 
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -159,6 +221,12 @@
                 userNameSpan.textContent = username;
                 loginContainer.style.display = 'none';
                 homeContainer.style.display = 'block';
+
+                if (username === 'admin') {
+                    adminUsersButton.style.display = 'block';
+                } else {
+                    adminUsersButton.style.display = 'none';
+                }
             } else {
                 errorMessage.style.display = 'block';
             }
@@ -173,13 +241,34 @@
                 alert('Página Planta en construcción');
             } else if (page === 'comercial') {
                 alert('Página Comercial en construcción');
+            } else if (page === 'users') {
+                populateUsersTable();
+                usersContainer.style.display = 'block';
             }
         }
 
         function goBack() {
             fincasContainer.style.display = 'none';
+            usersContainer.style.display = 'none';
             homeContainer.style.display = 'block';
         }
+
+        addUserForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newUsername = document.getElementById('new-username').value;
+            const newPassword = document.getElementById('new-password').value;
+
+            if (!users[newUsername]) {
+                users[newUsername] = newPassword;
+                populateUsersTable();
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 2000);
+                addUserForm.reset();
+            }
+        });
     </script>
 </body>
 </html>
